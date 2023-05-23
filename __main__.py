@@ -85,29 +85,6 @@ vault = keyvault.Vault("vault",
     resource_group_name=resource_group.name,
     vault_name="nwkvault45") #change the vault name
 
-# Export the primary key of the Storage Account
-primary_key = (
-    pulumi.Output.all(resource_group.name, account.name)
-    .apply(
-        lambda args: storage.list_storage_account_keys(
-            resource_group_name=args[0], account_name=args[1]
-        )
-    )
-    .apply(lambda accountKeys: accountKeys.keys[0].value)
-)
-
-pulumi.export("primary_storage_key", primary_key)
-
-#storing primary in keyvault
-key_vault_secret = keyvault.Secret("key_vault_secret",
-   properties=keyvault.SecretPropertiesArgs(
-       value=primary_key,
-   ),
-   resource_group_name=resource_group.name,
-   vault_name=vault.name,
-   secret_name="storage-account-key"
-)
-
 # Export the encryption key of the Storage Account
 encryption_key = (
     pulumi.Output.all(resource_group.name, account.name)
