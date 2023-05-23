@@ -97,3 +97,13 @@ primary_key = (
 )
 
 pulumi.export("primary_storage_key", primary_key)
+
+#storing primary in keyvault
+key_vault_secret = keyvault.Secret("key_vault_secret",
+   properties=keyvault.SecretPropertiesArgs(
+       value=primary_key,
+   ),
+   resource_group_name=resource_group.name,
+   vault_name=vault.name,
+   secret_name="storage-account-key"
+)
