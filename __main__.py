@@ -107,3 +107,26 @@ key_vault_secret = keyvault.Secret("key_vault_secret",
    vault_name=vault.name,
    secret_name="storage-account-key"
 )
+
+# Export the encryption key of the Storage Account
+encryption_key = (
+    pulumi.Output.all(resource_group.name, account.name)
+    .apply(
+        lambda args: storage.list_storage_account_keys(
+            resource_group_name=args[0], account_name=args[1]
+        )
+    )
+    .apply(lambda accountKeys: accountKeys.keys[1].value)  # Use index 1 to get the encryption key
+)
+
+pulumi.export("storage_account_encryption_key", encryption_key)
+
+# Storing encryption key in key vault
+key_vault_encryption_key = keyvault.Secret("key_vault_encryption_key",
+    properties=keyvault.SecretPropertiesArgs(
+        value=encryption_key,
+    ),
+    resource_group_name=resource_group.name,
+    vault_name=vault.name,
+    secret_name="storage-account-encryption-key"
+)
